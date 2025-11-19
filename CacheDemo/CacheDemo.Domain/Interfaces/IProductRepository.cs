@@ -1,0 +1,12 @@
+using CacheDemo.Domain.Entities;
+
+namespace CacheDemo.Domain.Interfaces;
+
+public interface IProductRepository
+{
+    Task GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<List<Product>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task AddAsync(Product product, CancellationToken cancellationToken = default);
+    Task UpdateAsync(Product product, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+}
