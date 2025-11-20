@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CacheDemo.Application.Common.Mediator;
 
-
 public class Mediator(IServiceProvider serviceProvider) : IMediator
 {
     public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request,
