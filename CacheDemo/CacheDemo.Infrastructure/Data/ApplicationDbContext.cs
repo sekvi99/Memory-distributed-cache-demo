@@ -3,12 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CacheDemo.Infrastructure.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext(DbContextOptions options) : DbContext(options)
 {
-    public ApplicationDbContext(DbContextOptions options) : base(options)
-    {
-    }
-
     public DbSet<Product> Products => Set<Product>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
