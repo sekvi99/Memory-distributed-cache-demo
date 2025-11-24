@@ -4,13 +4,11 @@ using CacheDemo.Application.DTOs;
 using CacheDemo.Domain.Entities;
 using CacheDemo.Domain.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace CacheDemo.Application.Commands.Handlers;
 
 public class CreateProductCommandHandler(
     IProductRepository repository,
-    IMemoryCache memoryCache,
     IDistributedCache distributedCache)
     : IRequestHandler<CreateProductCommand,
         Result<ProductDto>>
@@ -30,7 +28,6 @@ public class CreateProductCommandHandler(
         await repository.AddAsync(product, cancellationToken);
 
         // Invalidate caches
-        memoryCache.Remove("all-products");
         await distributedCache.RemoveAsync("all-products", cancellationToken);
 
         return Result<ProductDto>.Success(new ProductDto(

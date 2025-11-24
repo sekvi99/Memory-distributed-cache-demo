@@ -13,9 +13,6 @@ builder.Services.AddOpenApi();
 // Add Swagger documentation
 builder.Services.AddSwaggerDocumentation();
 
-// Memory Cache
-builder.Services.AddMemoryCache();
-
 // Distributed Cache (Redis)
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -30,15 +27,7 @@ builder.Services.AddApplication();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "CacheDemo API v1");
-        options.RoutePrefix = string.Empty; // Swagger UI at root (https://localhost:5001/)
-    });
-}
+if (app.Environment.IsDevelopment()) app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 

@@ -3,13 +3,11 @@ using CacheDemo.Application.Common.Models;
 using CacheDemo.Application.DTOs;
 using CacheDemo.Domain.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace CacheDemo.Application.Commands.Handlers;
 
 public class UpdateProductCommandHandler(
     IProductRepository repository,
-    IMemoryCache memoryCache,
     IDistributedCache distributedCache)
     : IRequestHandler<UpdateProductCommand, Result<ProductDto>>
 {
@@ -27,10 +25,9 @@ public class UpdateProductCommandHandler(
 
         await repository.UpdateAsync(product, cancellationToken);
 
-        // Invalidate caches for this product and the list
-        memoryCache.Remove($"product-{request.Id}");
-        memoryCache.Remove("all-products");
+        // Invalidate caches
         await distributedCache.RemoveAsync("all-products", cancellationToken);
+        await distributedCache.RemoveAsync($"product-{request.Id}", cancellationToken);
 
         return Result<ProductDto>.Success(new ProductDto(
             product.Id,

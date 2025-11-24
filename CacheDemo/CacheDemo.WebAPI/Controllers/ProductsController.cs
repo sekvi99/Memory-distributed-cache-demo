@@ -19,7 +19,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
         var query = new GetProductByIdQuery(id);
         var result = await mediator.Send(query, cancellationToken);
         if (!result.IsSuccess) return NotFound(new { errors = result.Errors });
-        
+
         return Ok(result.Data);
     }
 
@@ -33,7 +33,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
         var result = await mediator.Send(query, cancellationToken);
 
         if (!result.IsSuccess) return BadRequest(new { errors = result.Errors });
-        
+
         return Ok(result.Data);
     }
 
@@ -75,7 +75,7 @@ public class ProductsController(IMediator mediator) : ControllerBase
 
         var result = await mediator.Send(command, cancellationToken);
         if (!result.IsSuccess) return NotFound(new { errors = result.Errors });
-        
+
         return Ok(result.Data);
     }
 

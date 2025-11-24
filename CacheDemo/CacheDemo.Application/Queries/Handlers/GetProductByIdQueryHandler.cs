@@ -1,32 +1,31 @@
+using System.Text.Json;
 using CacheDemo.Application.Common.Mediator.Interfaces;
 using CacheDemo.Application.Common.Models;
 using CacheDemo.Application.DTOs;
 using CacheDemo.Domain.Interfaces;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace CacheDemo.Application.Queries.Handlers;
 
-public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, Result<ProductDto>>
+public class GetProductByIdQueryHandler(IProductRepository repository, IDistributedCache distributedCache)
+    : IRequestHandler<GetProductByIdQuery, Result<ProductDto>>
 {
-    private readonly IMemoryCache _memoryCache;
-    private readonly IProductRepository _repository;
-
-    public GetProductByIdQueryHandler(IProductRepository repository, IMemoryCache memoryCache)
-    {
-        _repository = repository;
-        _memoryCache = memoryCache;
-    }
-
     public async Task<Result<ProductDto>> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
     {
         var cacheKey = $"product-{request.Id}";
 
-        // Try to get from memory cache first
-        if (_memoryCache.TryGetValue(cacheKey, out ProductDto? cachedProduct))
-            return Result<ProductDto>.Success(cachedProduct);
+        // Try to get from cache first
+        var cachedData = await distributedCache.GetStringAsync(cacheKey, cancellationToken);
+
+        if (!string.IsNullOrEmpty(cachedData))
+        {
+            var cachedProduct = JsonSerializer.Deserialize<ProductDto>(cachedData);
+            if (cachedProduct != null)
+                return Result<ProductDto>.Success(cachedProduct);
+        }
 
         // Fetch from database
-        var product = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        var product = await repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (product == null)
             return Result<ProductDto>.Failure("Product not found");
@@ -41,14 +40,14 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, R
             product.UpdatedAt
         );
 
-        // Cache for 5 minutes
-        var cacheOptions = new MemoryCacheEntryOptions()
-            .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
-            .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+        // Cache in Redis for 10 minutes
+        var serializedData = JsonSerializer.Serialize(productDto);
+        var cacheOptions = new DistributedCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromMinutes(10))
+            .SetSlidingExpiration(TimeSpan.FromMinutes(5));
 
-        _memoryCache.Set(cacheKey, productDto, cacheOptions);
+        await distributedCache.SetStringAsync(cacheKey, serializedData, cacheOptions, cancellationToken);
 
         return Result<ProductDto>.Success(productDto);
-        ;
     }
 }

@@ -46,6 +46,5 @@ public class GetAllProductsQueryHandler(IProductRepository repository, IDistribu
         await distributedCache.SetStringAsync(cacheKey, serializedData, cacheOptions, cancellationToken);
 
         return Result<List<ProductDto>>.Success(productDtos);
-        ;
     }
 }
