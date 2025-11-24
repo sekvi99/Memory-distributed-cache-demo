@@ -18,9 +18,9 @@ public class ProductsController(IMediator mediator) : ControllerBase
     {
         var query = new GetProductByIdQuery(id);
         var result = await mediator.Send(query, cancellationToken);
-
-        Response.Headers.Append("X-Cache-Source", "Memory");
-        return Ok(result);
+        if (!result.IsSuccess) return NotFound(new { errors = result.Errors });
+        
+        return Ok(result.Data);
     }
 
     /// Get all products - Demonstrates IDistributedCache (Redis) usage
@@ -32,8 +32,9 @@ public class ProductsController(IMediator mediator) : ControllerBase
         var query = new GetAllProductsQuery();
         var result = await mediator.Send(query, cancellationToken);
 
-        Response.Headers.Append("X-Cache-Source", "Redis");
-        return Ok(result);
+        if (!result.IsSuccess) return BadRequest(new { errors = result.Errors });
+        
+        return Ok(result.Data);
     }
 
     /// Create product - Demonstrates cache invalidation
@@ -51,7 +52,9 @@ public class ProductsController(IMediator mediator) : ControllerBase
         );
 
         var result = await mediator.Send(command, cancellationToken);
-        return CreatedAtAction(nameof(GetById), new { id = result.Data.Id }, result);
+        if (!result.IsSuccess) return BadRequest(new { errors = result.Errors });
+
+        return CreatedAtAction(nameof(GetById), new { id = result.Data.Id }, result.Data);
     }
 
     /// Update product - Demonstrates cache invalidation
@@ -71,11 +74,9 @@ public class ProductsController(IMediator mediator) : ControllerBase
         );
 
         var result = await mediator.Send(command, cancellationToken);
-
-        if (result == null)
-            return NotFound();
-
-        return Ok(result);
+        if (!result.IsSuccess) return NotFound(new { errors = result.Errors });
+        
+        return Ok(result.Data);
     }
 
     /// Delete product - Demonstrates cache invalidation

@@ -7,8 +7,9 @@ namespace CacheDemo.Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services, Assembly assembly)
+    public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        var assembly = Assembly.GetExecutingAssembly();
         services.AddScoped<IMediator, Mediator>();
 
         // Register all handlers

@@ -1,4 +1,3 @@
-using System.Reflection;
 using CacheDemo.Application;
 using CacheDemo.Extensions;
 using CacheDemo.Infrastructure;
@@ -26,7 +25,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
 // Application and Infrastructure services
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddApplication(Assembly.GetExecutingAssembly());
+builder.Services.AddApplication();
 
 var app = builder.Build();
 

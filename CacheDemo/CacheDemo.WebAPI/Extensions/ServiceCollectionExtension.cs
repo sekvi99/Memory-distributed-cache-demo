@@ -13,4 +13,4 @@ public static class ServiceCollectionExtension
 
         return services;
     }
-} 
+}
